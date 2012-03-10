@@ -1,4 +1,4 @@
-package com.example;
+package com.rickdu.important_day;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
+import com.rickdu.important_day.data.DatabaseHandler;
+import com.rickdu.important_day.data.EventModel;
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,12 +17,16 @@ import android.widget.*;
  * To change this template use File | Settings | File Templates.
  */
 public class CreateNewActivity extends Activity {
-    
+
     LinearLayout layout;
     LinearLayout titleLayout, bodyLayout;
 
     Button cancelButton, saveButton;
-    
+    EditText input = null;
+
+    String type;
+    int year, month, day;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         layout = new LinearLayout(this);
@@ -57,18 +63,7 @@ public class CreateNewActivity extends Activity {
         // save button
         saveButton = new Button(this);
         saveButton.setText("Save");
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //TODO: save data
-
-                System.out.println("save clicked");
-                Intent intent = new Intent();
-                intent.setClass(CreateNewActivity.this, Main.class);
-                startActivity(intent);
-                CreateNewActivity.this.finish();
-            }
-        });
+        saveButton.setOnClickListener(new SaveDataListener(this));
         titleLayout.addView(saveButton);
 
         layout.addView(titleLayout);
@@ -86,28 +81,67 @@ public class CreateNewActivity extends Activity {
         RadioButton radioAnni = new RadioButton(this);
         radioAnni.setText("Anniversary");
         radioAnni.setChecked(false);
-        radioGroup.addView(radioBirth);        
+        radioGroup.addView(radioBirth);
         radioGroup.addView(radioAnni);
         bodyLayout.addView(radioGroup, param);
 
         // event name
-        EditText input = new EditText(this);
+        input = new EditText(this);
         bodyLayout.addView(input, param);
 
         // date picker
         DatePicker date = new DatePicker(this);
         date.init(1999, 1, 1, new DatePicker.OnDateChangedListener() {
             @Override
-            public void onDateChanged(DatePicker datePicker, int i, int i1, int i2) {
+            public void onDateChanged(DatePicker datePicker, int y, int m, int d) {
                 System.out.println("Date changed");
+                year = y;
+                month = m;
+                day = d;
             }
         });
         bodyLayout.addView(date, param);
-
 
         layout.addView(bodyLayout);
 
         setContentView(layout);
 
+    }
+
+    class SaveDataListener implements View.OnClickListener {
+        CreateNewActivity context;
+
+        public SaveDataListener(CreateNewActivity ctx) {
+            context = ctx;
+        }
+
+        @Override
+        public void onClick(View view) {
+            // check data
+            String name = context.input.getText().toString();
+            if (name == null || "".equals(name)) {
+                Toast.makeText(context, "Name cannot be empty...", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // save to database
+            EventModel model = new EventModel();
+            model.setName(name);
+            model.setYear(context.year);
+            model.setMonth(context.month);
+            model.setDay(context.day);
+            System.out.println(model);
+
+            DatabaseHandler handler = new DatabaseHandler(context);
+            handler.open();
+            handler.insert(model);
+            handler.close();
+
+            System.out.println("save clicked");
+
+            Intent intent = new Intent();
+            intent.setClass(CreateNewActivity.this, Main.class);
+            startActivity(intent);
+            CreateNewActivity.this.finish();
+        }
     }
 }

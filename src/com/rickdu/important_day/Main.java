@@ -1,4 +1,4 @@
-package com.example;
+package com.rickdu.important_day;
 
 import android.R;
 import android.app.Activity;
@@ -6,26 +6,26 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.*;
+import com.rickdu.important_day.data.DatabaseHandler;
 
-public class Main extends Activity
-{
+public class Main extends Activity {
     LinearLayout layout;
     ListView listView;
     Button createButton;
 
-    /** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     */
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // create titleLayout
         layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setBackgroundColor(Color.BLACK);
-        
+
         // create list view
         listView = new ListView(this);
         LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
@@ -54,12 +54,15 @@ public class Main extends Activity
         setContentView(layout);
 
         // get phones cursor
-        Cursor cur = getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+//        Cursor cur = getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        DatabaseHandler db = new DatabaseHandler(this);
+        db.open();
+        Cursor cur = db.findAll();
         startManagingCursor(cur);
         // create adaptor to bridge data and list view
         ListAdapter adapter = new SimpleCursorAdapter(this,
-        R.layout.simple_list_item_2, // 2 items each line 
-                cur, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup.LAST_TIME_CONTACTED},
+                R.layout.simple_list_item_2, // 2 items each line
+                cur, new String[]{db.KEY_NAME, db.KEY_ID},
                 new int[]{R.id.text1, R.id.text2});
         listView.setAdapter(adapter);
         listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -80,10 +83,9 @@ public class Main extends Activity
             }
         });
     }
-    
+
     // display toast
-    public void displayToast(String str)
-    {
+    public void displayToast(String str) {
         System.out.println("item selected");
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
     }
