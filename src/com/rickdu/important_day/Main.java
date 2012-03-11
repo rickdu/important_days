@@ -9,6 +9,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
 import com.rickdu.important_day.data.DatabaseHandler;
+import com.rickdu.important_day.data.EventView;
+import com.rickdu.important_day.data.UtilEventView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Main extends Activity {
     LinearLayout layout;
@@ -59,12 +65,28 @@ public class Main extends Activity {
         db.open();
         Cursor cur = db.findAll();
         startManagingCursor(cur);
+
+        // load data to EventViews
+        List data = new ArrayList<Map<String, String>>();
+        while (cur.moveToNext()) {
+            EventView ev = new EventView();
+            ev.setId(cur.getInt(cur.getColumnIndex(DatabaseHandler.KEY_ID)));
+            ev.setName(cur.getString(cur.getColumnIndex(DatabaseHandler.KEY_NAME)));
+            ev.setType(cur.getString(cur.getColumnIndex(DatabaseHandler.KEY_TYPE)));
+            ev.setYear(cur.getInt(cur.getColumnIndex(DatabaseHandler.KEY_YEAR)));
+            ev.setMonth(cur.getInt(cur.getColumnIndex(DatabaseHandler.KEY_MONTH)));
+            ev.setDay(cur.getInt(cur.getColumnIndex(DatabaseHandler.KEY_DAY)));
+            data.add(UtilEventView.toMap(ev));
+        }
+
         // create adaptor to bridge data and list view
-        ListAdapter adapter = new SimpleCursorAdapter(this,
+        ListAdapter adapter = new SimpleAdapter(this,
+                data,
                 R.layout.simple_list_item_2, // 2 items each line
-                cur, new String[]{db.KEY_NAME, db.KEY_ID},
+                new String[]{db.KEY_NAME, db.KEY_ID},
                 new int[]{R.id.text1, R.id.text2});
         listView.setAdapter(adapter);
+
         listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {

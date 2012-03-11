@@ -91,7 +91,7 @@ public class CreateNewActivity extends Activity {
 
         // date picker
         DatePicker date = new DatePicker(this);
-        date.init(1999, 1, 1, new DatePicker.OnDateChangedListener() {
+        date.init(1990, 1, 1, new DatePicker.OnDateChangedListener() {
             @Override
             public void onDateChanged(DatePicker datePicker, int y, int m, int d) {
                 System.out.println("Date changed");
